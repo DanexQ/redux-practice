@@ -33,12 +33,7 @@ const PostsList = () => {
     content = <p>{postsError}</p>;
   }
 
-  return (
-    <div>
-      <h2>Posts</h2>
-      {content}
-    </div>
-  );
+  return <div>{content}</div>;
 };
 
 export default PostsList;

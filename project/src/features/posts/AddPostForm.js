@@ -1,19 +1,23 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addPost } from "./postsSlice";
+import { addNewPost } from "./postsSlice";
 import { selectAllUsers } from "../users/usersSlice";
 import React from "react";
 
 const AddPostForm = () => {
   const [formData, setFormData] = useState({
     title: "",
-    content: "",
+    body: "",
     userId: "",
   });
+  const [addRequestStatus, setAddRequestStatus] = useState("idle");
+
   const users = useSelector(selectAllUsers);
   const dispatch = useDispatch();
 
-  const canSave = formData.title && formData.content && formData.userId;
+  const canSave =
+    [formData.title, formData.body, formData.userId].every(Boolean) &&
+    addRequestStatus === "idle";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,12 +27,14 @@ const AddPostForm = () => {
   const submitForm = (e) => {
     e.preventDefault();
     if (canSave) {
-      dispatch(addPost(formData.title, formData.content, formData.userId));
-      setFormData({
-        title: "",
-        content: "",
-        userId: "",
-      });
+      try {
+        setAddRequestStatus("pending");
+        dispatch(addNewPost(formData)).unwrap();
+      } catch (err) {
+        console.log("Error with saving the post", err.message);
+      } finally {
+        setAddRequestStatus("idle");
+      }
     }
   };
 
@@ -55,12 +61,12 @@ const AddPostForm = () => {
           <option value="">--Choose user--</option>
           {usersOption}
         </select>
-        <label htmlFor="content">Content:</label>
+        <label htmlFor="body">Content:</label>
         <textarea
           type="text"
-          name="content"
+          name="body"
           placeholder="Content"
-          value={formData.content}
+          value={formData.body}
           onChange={handleChange}
         />
         <button disabled={!canSave}>Submit</button>

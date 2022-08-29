@@ -16,6 +16,27 @@ export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
   return [...response.data];
 });
 
+export const addNewPost = createAsyncThunk(
+  "posts/addNewPost",
+  async (initialPost) => {
+    const response = await axios.post(POSTS_URL, initialPost);
+    console.log("ADD POST", response);
+    return response.data;
+  }
+);
+
+export const updatePost = createAsyncThunk(
+  "posts/updatePost",
+  async (initialPost) => {
+    const response = await axios.put(
+      `${POSTS_URL}/${initialPost.id}`,
+      initialPost
+    );
+    console.log("UPDATE POST", response.data);
+    return response.data;
+  }
+);
+
 export const postsSlice = createSlice({
   name: "posts",
   initialState,
@@ -25,12 +46,12 @@ export const postsSlice = createSlice({
       reducer(state, action) {
         state.posts.push(action.payload);
       },
-      prepare(title, content, userId) {
+      prepare(title, body, userId) {
         return {
           payload: {
             id: nanoid(),
             title,
-            content,
+            body,
             date: new Date().toISOString(),
             userId,
             reactions: {
@@ -76,6 +97,32 @@ export const postsSlice = createSlice({
       .addCase(fetchPosts.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
+      })
+      .addCase(addNewPost.fulfilled, (state, action) => {
+        console.log("BEFORE", action.payload);
+        action.payload.userId = Number(action.payload.userId);
+        action.payload.date = new Date().toISOString();
+        action.payload.reactions = {
+          thumbsUp: 0,
+          wow: 0,
+          heart: 0,
+          rocket: 0,
+          coffee: 0,
+        };
+        console.log("AFTER", action.payload);
+        state.posts.push(action.payload);
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        console.log(state, action);
+        if (!action.payload?.id) {
+          console.log("Update could not complete");
+          return;
+        }
+        action.payload.date = new Date().toISOString();
+        const posts = state.posts.filter(
+          (post) => post.id !== action.payload.id
+        );
+        state.posts = [...posts, action.payload];
       });
   },
 });
@@ -83,6 +130,11 @@ export const postsSlice = createSlice({
 export const selectAllPosts = (state) => state.posts.posts;
 export const getPostsStatus = (state) => state.posts.status;
 export const getPostsError = (state) => state.posts.error;
+
+export const selectPostById = (state, postId) => {
+  console.log(state);
+  return state.posts.posts.find((post) => post.id === Number(postId));
+};
 
 export const { addPost, addReaction } = postsSlice.actions;
 
