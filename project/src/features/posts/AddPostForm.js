@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addNewPost } from "./postsSlice";
 import { selectAllUsers } from "../users/usersSlice";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const AddPostForm = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ const AddPostForm = () => {
 
   const users = useSelector(selectAllUsers);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const canSave =
     [formData.title, formData.body, formData.userId].every(Boolean) &&
@@ -30,6 +32,12 @@ const AddPostForm = () => {
       try {
         setAddRequestStatus("pending");
         dispatch(addNewPost(formData)).unwrap();
+        setFormData({
+          title: "",
+          body: "",
+          userId: "",
+        });
+        navigate("/");
       } catch (err) {
         console.log("Error with saving the post", err.message);
       } finally {

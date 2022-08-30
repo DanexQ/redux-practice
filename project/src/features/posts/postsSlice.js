@@ -28,12 +28,26 @@ export const addNewPost = createAsyncThunk(
 export const updatePost = createAsyncThunk(
   "posts/updatePost",
   async (initialPost) => {
-    const response = await axios.put(
-      `${POSTS_URL}/${initialPost.id}`,
-      initialPost
-    );
-    console.log("UPDATE POST", response.data);
-    return response.data;
+    try {
+      const response = await axios.put(
+        `${POSTS_URL}/${initialPost.id}`,
+        initialPost
+      );
+      console.log("UPDATE POST", response.data);
+      return response.data;
+    } catch (err) {
+      return initialPost;
+    }
+  }
+);
+
+export const deletePost = createAsyncThunk(
+  "posts/deletePost",
+  async (initialPost) => {
+    const response = await axios.delete(`${POSTS_URL}/${initialPost.id}`);
+    console.log(response);
+    if (response?.status === 200) return initialPost;
+    return `${response?.status}: ${response?.statusText}`;
   }
 );
 
@@ -123,6 +137,17 @@ export const postsSlice = createSlice({
           (post) => post.id !== action.payload.id
         );
         state.posts = [...posts, action.payload];
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        if (!action.payload?.id) {
+          console.log("Delete could not complete");
+          console.log(action.payload);
+          return;
+        }
+        console.log(state);
+        const { id } = action.payload;
+        const posts = state.posts.filter((post) => post.id !== id);
+        state.posts = posts;
       });
   },
 });

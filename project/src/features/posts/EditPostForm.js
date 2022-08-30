@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { selectAllUsers } from "../users/usersSlice";
-import { selectPostById, updatePost } from "./postsSlice";
+import { selectPostById, updatePost, deletePost } from "./postsSlice";
 
 const EditPostForm = () => {
   const { postId } = useParams();
@@ -63,6 +63,23 @@ const EditPostForm = () => {
       }
     }
   };
+
+  const onDeletePostClick = () => {
+    try {
+      dispatch(deletePost({ id: post.id })).unwrap();
+      setFormData({
+        title: "",
+        body: "",
+        userId: "",
+      });
+      navigate(`/`);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setRequestStatus("idle");
+    }
+  };
+
   return (
     <div>
       <h1>Add a new post</h1>
@@ -93,6 +110,9 @@ const EditPostForm = () => {
           onChange={handleChange}
         />
         <button disabled={!canSave}>Submit</button>
+        <button className="deleteButton" onClick={onDeletePostClick}>
+          Delete Post
+        </button>
       </form>
     </div>
   );
