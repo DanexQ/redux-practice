@@ -13,9 +13,9 @@ const EditPostForm = () => {
   const users = useSelector(selectAllUsers);
 
   const [formData, setFormData] = useState({
-    title: post?.title,
-    body: post?.body,
-    userId: post?.userId,
+    title: post?.title || "",
+    body: post?.body || "",
+    userId: post?.userId || "",
   });
   const [requestStatus, setRequestStatus] = useState("idle");
 
